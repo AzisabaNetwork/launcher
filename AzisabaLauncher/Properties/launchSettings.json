@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AzisabaLauncher (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "AzisabaLauncher (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
