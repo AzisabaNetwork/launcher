@@ -25,15 +25,7 @@
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" VerticalAlignment="Center">
-                <ComboBox Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" SelectedIndex="0" Width="200">
-                    <ComboBoxItem>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Image Height="32" Source="ms-appx:///Assets/Resources/Icon.png" VerticalAlignment="Center" Width="32"></Image>
-                            <TextBlock Margin="10, 0, 0, 0" Text="最新バージョン" VerticalAlignment="Center"></TextBlock>
-                        </StackPanel>
-                    </ComboBoxItem>
-                </ComboBox>
-
+                <ComboBox x:Name="Versions" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" SelectedIndex="0" Width="200" />
                 <Button Background="#0a924d" Content="プレイ" Foreground="White" Height="40" Margin="10" Width="80" />
             </StackPanel>
 

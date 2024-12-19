@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Minecraft.png" />
     <None Remove="Assets\Resources\Icon.ico" />
     <None Remove="Assets\Resources\Icon.png" />
     <None Remove="Assets\Wallpapers\dd2e8e8c-f9d4-422d-b23a-99f7c1cb302e.png" />
