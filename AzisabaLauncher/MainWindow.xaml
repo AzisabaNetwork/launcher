@@ -25,8 +25,17 @@
             </StackPanel>
 
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" VerticalAlignment="Center">
-                <ComboBox x:Name="Versions" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" SelectedIndex="0" Width="200" />
-                <Button Background="#0a924d" Content="プレイ" Foreground="White" Height="40" Margin="10" Width="80" />
+                <ComboBox x:Name="Versions" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" SelectedIndex="0" Width="200">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Height="32" Source="{Binding Icon}" VerticalAlignment="Center" Width="32"></Image>
+                                <TextBlock Margin="10,0,0,0" Text="{Binding Name}" VerticalAlignment="Center"></TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Background="#0a924d" Click="OnPlayButtonClicked" Content="プレイ" Foreground="White" Height="40" Margin="10" Width="80" />
             </StackPanel>
 
             <Button Background="#353535" Height="46" HorizontalAlignment="Right" HorizontalContentAlignment="Left" Margin="0,0,20,0" Width="240">

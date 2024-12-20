@@ -1,6 +1,5 @@
 using AzisabaLauncher.Minecraft;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 
@@ -22,36 +21,42 @@ namespace AzisabaLauncher
         {
             await MinecraftVersion.Fetch();
 
-            foreach (var version in MinecraftVersion.GetInstances())
+            foreach (MinecraftVersion version in MinecraftVersion.GetInstances())
             {
-                ComboBoxItem item = new ComboBoxItem();
-
-                StackPanel stackPanel = new StackPanel
+                Versions.Items.Add(new VersionItemModel
                 {
-                    Orientation = Orientation.Horizontal,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                Image image = new Image
-                {
-                    Height = 32,
-                    Source = new BitmapImage(new Uri("ms-appx:///Assets/Minecraft.png")),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Width = 32
-                };
-
-                TextBlock textBlock = new TextBlock()
-                {
-                    Margin = new Thickness(10, 0, 0, 0),
-                    Text = version.Name,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                stackPanel.Children.Add(image);
-                stackPanel.Children.Add(textBlock);
-                item.Content = stackPanel;
-                Versions.Items.Add(item);
+                    Icon = new BitmapImage(new Uri("ms-appx:///Assets/Minecraft.png")),
+                    Name = version.Name!
+                });
             }
+        }
+
+        private async void OnPlayButtonClicked(object sender, RoutedEventArgs e)
+        {
+            object? selectedItem = Versions.SelectedItem;
+
+            if (selectedItem == null)
+            {
+                System.Diagnostics.Debug.WriteLine("rtn1");
+                return;
+            }
+
+            VersionItemModel? model = selectedItem as VersionItemModel;
+
+            if (model == null)
+            {
+                System.Diagnostics.Debug.WriteLine("rtn2");
+                return;
+            }
+
+            MinecraftVersion version = MinecraftVersion.GetInstance(model.Name)!;
+            await version.DownloadJarFile();
+        }
+
+        public class VersionItemModel
+        {
+            public required string Name { get; set; }
+            public required BitmapImage Icon { get; set; }
         }
     }
 }

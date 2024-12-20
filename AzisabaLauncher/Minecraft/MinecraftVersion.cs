@@ -1,5 +1,8 @@
-﻿using System;
+﻿using AzisabaLauncher.Extensions;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -10,6 +13,11 @@ namespace AzisabaLauncher.Minecraft
     public class MinecraftVersion
     {
         private static readonly HashSet<MinecraftVersion> Instances = new HashSet<MinecraftVersion>();
+
+        public static MinecraftVersion? GetInstance(string name)
+        {
+            return Instances.FirstOrDefault(instance => instance.Name == name);
+        }
 
         public static List<MinecraftVersion> GetInstances()
         {
@@ -33,7 +41,6 @@ namespace AzisabaLauncher.Minecraft
             foreach (var version in versions.EnumerateArray())
             {
                 var ver = JsonSerializer.Deserialize<MinecraftVersion>(version.GetRawText(), options)!;
-                await ver.InitializeAsync();
                 Instances.Add(ver);
             }
 
@@ -58,8 +65,6 @@ namespace AzisabaLauncher.Minecraft
         [JsonPropertyName("url")]
         public string? DetailsUrl { get; init; }
 
-        public StorageFolder? Directory { get; private set; }
-
         public JsonElement? Json { get; private set; }
 
         public MinecraftVersion()
@@ -67,31 +72,71 @@ namespace AzisabaLauncher.Minecraft
             Instances.Add(this);
         }
 
-        private async Task InitializeAsync()
+        public async Task<StorageFolder> GetStorageFolder()
         {
-            this.Directory = await this.TryGetDirectory();
-        }
+            StorageFolder folder;
 
-        public async Task<StorageFolder> CreateDirectory()
-        {
-            if (this.Directory != null)
-            {
-                return this.Directory;
-            }
-
-            return await App.AppDirectory.CreateFolderAsync(this.Name, CreationCollisionOption.FailIfExists);
-        }
-
-        private async Task<StorageFolder?> TryGetDirectory()
-        {
             try
             {
-                return await App.AppDirectory.GetFolderAsync(this.Name);
+                folder = await App.AppDirectory.GetFolderAsync(this.Name);
             }
-            catch
+            catch (FileNotFoundException)
             {
-                return null;
+                folder = await App.AppDirectory.CreateFolderAsync(this.Name);
             }
+
+            return folder;
+        }
+
+        public async Task<JsonElement> GetJsonElement()
+        {
+            StorageFolder folder = await this.GetStorageFolder();
+
+            if (! await folder.Contains($"{this.Name}.json"))
+            {
+                await this.DownloadJsonFile();
+            }
+
+            StorageFile file = await folder.GetFileAsync($"{this.Name}.json");
+
+            string json;
+
+            using (var stream = await file.OpenStreamForReadAsync())
+            using (var reader = new StreamReader(stream))
+            {
+                json = await reader.ReadToEndAsync();
+            }
+
+            using (JsonDocument document = JsonDocument.Parse(json))
+            {
+                return document.RootElement.Clone();
+            }
+        }
+
+        public async Task<StorageFile> DownloadJarFile()
+        {
+            JsonElement json = await this.GetJsonElement();
+            string url = json.GetProperty("downloads").GetProperty("client").GetProperty("url").GetString()!;
+
+            byte[] bytes = await App.HttpClient.GetByteArrayAsync(url);
+
+            StorageFile file = await (await this.GetStorageFolder()).CreateFileAsync($"{this.Name}.jar", CreationCollisionOption.ReplaceExisting);
+
+            await FileIO.WriteBytesAsync(file, bytes);
+
+            return file;
+        }
+
+        public async Task<StorageFile> DownloadJsonFile()
+        {
+            string json = await App.HttpClient.GetStringAsync(this.DetailsUrl);
+
+            StorageFolder folder = await this.GetStorageFolder();
+            StorageFile file = await folder.CreateFileAsync($"{this.Name}.json", CreationCollisionOption.ReplaceExisting);
+
+            await FileIO.WriteTextAsync(file, json);
+
+            return file;
         }
     }
 }
